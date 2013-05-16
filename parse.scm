@@ -221,7 +221,7 @@
     (expression ("let" (arbno identifier "=" expression) "in" expression) let-exp)
     
     ;; Expression ::= Expression({Expression}*(,))
-    (expression (expression "(" (arbno expression (arbno ",")) ")") call-exp)
+    (expression ("(" expression (arbno expression (arbno ",")) ")") call-exp)
     
     ;; Expression ::= proc({Identifier : Type}*(,)) Expression
     (expression ("proc" "(" (arbno identifier ":" type (arbno ",")) ")" expression) proc-exp)
@@ -273,67 +273,13 @@
               (exp->string body)))
       (else
         (eopl:error 'pgm->string "arg=~a" pgm)))))
+
+(define pgm->string
+  (lambda (pgm)
+    (cases program pgm
+      (a-program (class-decls body)
+        (string-append (exp->string body))))))        
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(define class-decl->string
-  (lambda (class-decl1)
-    (cases class-decl class-decl1
-      (a-class-decl (class-name super-name field-names method-decls)
-        (format "class ~a extends ~a~a~a"
-                (class-name)
-                (super-name)
-               (letrec ((field-names->string (lambda (var-list)
-                 (cond
-                   ((null? var-list)
-                    (format ""))
-                  ((null? (cdr var-list))
-                    (format "~a" (exp->string (car var-list))))
-                  (else
-                    (format "~a~a" (exp->string (car var-list)) (field-names->string (cdr var-list))))))))
-              (field-names->string field-names))
-
-              (letrec ((method-decls->string (lambda (method-decl-list)
-                (cond
-                  ((null? method-decl-list)
-                    (format ""))
-                  ((null? (cdr method-decl-list))
-                    (format "~a" (method-decl->string (car method-decl-list))))
-                  (else
-                    (format "~a~a" (method-decl->string (car method-decl-list)) (method-decls->string (cdr method-decl-list))))))))
-              (method-decls->string method-decls)))))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(define method-decl->string
-  (lambda (method-decl1)
-    (cases method-decl method-decl1
-      (a-method-decl (method-name vars body)
-        (format "method ~a(~a)~a"
-              (method-name)
-              (letrec ((vars->string (lambda (var-list)
-                (cond
-                  ((null? var-list)
-                    (format ""))
-                  ((null? (cdr var-list))
-                    (format ",~a" (exp->string (car var-list))))
-                  (else
-                    (format "~a~a" (exp->string (car var-list)) (vars->string (cdr var-list))))))))
-              (vars->string vars))
-              (exp->string body))))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-(define list-var->string
-  (lambda (list-var)
-    (cond
-      ((null? list-var)
-         (format ""))
-      ((null? (cdr list-var))
-         (format "~a" (exp->string (car list-var))))
-      (else
-        (format "~a~a" (exp->string (car list-var)) (list-var->string (cdr list-var)))))))
-
 
 (define exp->string
   (lambda (exp)
